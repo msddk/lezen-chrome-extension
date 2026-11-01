@@ -83,6 +83,30 @@ h2 {
   background: #1d4ed8;
 }
 
+.gonder-satiri {
+  margin-top: 8px;
+}
+
+#gonderBtn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+#gonderBtn:hover {
+  background: #15803d;
+}
+
+#gonderBtn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 /* --- Liste --- */
 
 main {
@@ -134,6 +158,12 @@ main {
 .kelime-satiri .tekrar {
   font-size: 11px;
   color: #9ca3af;
+  margin-right: 6px;
+}
+
+.kelime-satiri .gonderildi {
+  font-size: 12px;
+  color: #16a34a;
   margin-right: 6px;
 }
 
@@ -199,6 +229,65 @@ main {
   line-height: 1.4;
   max-height: 3.6em;
   overflow: hidden;
+}
+
+/* --- Lezen ayarları --- */
+
+.lezen-ayarlari {
+  padding: 8px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.lezen-ayarlari summary {
+  cursor: pointer;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.lezen-ayarlari label {
+  display: block;
+  margin: 8px 0 4px;
+  color: #6b7280;
+}
+
+.lezen-ayarlari input {
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 12px;
+  padding: 5px 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.kod-satiri {
+  display: flex;
+  gap: 6px;
+}
+
+.kod-satiri input {
+  flex: 1;
+}
+
+.lezen-ayarlari button {
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 6px;
+  font-size: 12px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.lezen-ayarlari button:hover {
+  background: #e5e7eb;
+}
+
+.ayar-ipucu {
+  margin: 6px 0 8px;
+  color: #9ca3af;
+  line-height: 1.4;
 }
 
 /* --- Durum mesajı --- */

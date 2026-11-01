@@ -22,6 +22,9 @@
       <button id="kopyalaBtn" title="Biriken tüm kelimeleri kopyalar, listeyi değiştirmez">📋 Kopyala</button>
       <button id="kenaraAlBtn" title="Biriken tüm kelimeleri kopyalar ve kenara alır; liste sıfırlanır">📌 Kenara al + kopyala</button>
     </div>
+    <div class="gonder-satiri">
+      <button id="gonderBtn" title="Henüz gönderilmemiş kelimeleri (her basışta en fazla 50) cümleleriyle Lezen'e gönderir; liste değişmez">📤 Lezen'e gönder</button>
+    </div>
   </section>
 
   <main id="liste-container">
@@ -33,6 +36,19 @@
       <div id="kenar-listesi"></div>
     </section>
   </main>
+
+  <details id="lezen-ayarlari" class="lezen-ayarlari">
+    <summary>⚙️ Lezen ayarları</summary>
+    <label for="webhookUrl">Webhook adresi</label>
+    <input type="url" id="webhookUrl" placeholder="https://..." autocomplete="off" spellcheck="false" />
+    <label for="kisiselKod">Kişisel kod</label>
+    <div class="kod-satiri">
+      <input type="password" id="kisiselKod" autocomplete="off" spellcheck="false" />
+      <button type="button" id="kodGosterBtn">Göster</button>
+    </div>
+    <p class="ayar-ipucu">Kodu Lezen uygulamasında Settings &gt; Your data &gt; Extension bölümünde bulursun.</p>
+    <button type="button" id="ayarKaydetBtn">Kaydet</button>
+  </details>
 
   <div id="durum-mesaji" class="durum-mesaji" hidden></div>
 

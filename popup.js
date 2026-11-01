@@ -1,7 +1,9 @@
 // popup.js
 
 const AYRAC_ANAHTARI = 'kopyaAyraci';
+const AYAR_ANAHTARI = 'lezenAyarlari'; // { webhookUrl, kod } - sadece chrome.storage.local
 let durumZamanlayici = null;
+let gonderiliyor = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   ayraciYukle();
@@ -12,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('ayracSecici').addEventListener('change', (e) => {
     chrome.storage.local.set({ [AYRAC_ANAHTARI]: e.target.value });
   });
+
+  document.getElementById('gonderBtn').addEventListener('click', lezeneGonder);
+  lezenAyarlariniYukle();
+  document.getElementById('kodGosterBtn').addEventListener('click', koduGosterGizle);
+  document.getElementById('ayarKaydetBtn').addEventListener('click', lezenAyarlariniKaydet);
 });
 
 // --- Yardımcılar ---
@@ -26,13 +33,13 @@ function ayraciYukle() {
   });
 }
 
-function durumGoster(mesaj, basarili) {
+function durumGoster(mesaj, basarili, sure = 3000) {
   const durumEl = document.getElementById('durum-mesaji');
   durumEl.hidden = false;
   durumEl.textContent = mesaj;
   durumEl.className = 'durum-mesaji ' + (basarili ? 'basarili' : 'hata');
   clearTimeout(durumZamanlayici);
-  durumZamanlayici = setTimeout(() => { durumEl.hidden = true; }, 3000);
+  durumZamanlayici = setTimeout(() => { durumEl.hidden = true; }, sure);
 }
 
 async function metniPanoyaKopyala(metin) {
@@ -64,6 +71,7 @@ function listeyiYukleVeCiz() {
     const tumVeri = sonuc.kelimeler;
     listeyiCiz(bekleyenKelimeleriTopla(tumVeri), tumVeri);
     kenarListesiniCiz(kenarPartileriTopla(tumVeri));
+    gonderButonunuGuncelle(tumVeri);
   });
 }
 
@@ -99,12 +107,20 @@ function listeyiCiz(bekleyenler, tumVeri) {
     tekrarSpan.className = 'tekrar';
     tekrarSpan.textContent = tekrarSayisi > 1 ? `${tekrarSayisi}. kez` : '';
 
+    const gonderildiSpan = document.createElement('span');
+    gonderildiSpan.className = 'gonderildi';
+    if (kayit.sent === true) {
+      gonderildiSpan.textContent = '✓';
+      gonderildiSpan.title = "Lezen'e gönderildi";
+    }
+
     const silBtn = document.createElement('button');
     silBtn.className = 'sil-btn';
     silBtn.textContent = '✕';
     silBtn.addEventListener('click', () => kelimeyiSil(gun, index));
 
     satir.appendChild(metinSpan);
+    satir.appendChild(gonderildiSpan);
     satir.appendChild(tekrarSpan);
     satir.appendChild(etiketSpan);
     satir.appendChild(silBtn);
@@ -238,4 +254,111 @@ function partiyiSil(kenarId) {
     }
     chrome.storage.local.set({ kelimeler: tumVeri }, listeyiYukleVeCiz);
   });
+}
+
+// --- Lezen'e gönderme ---
+// Asıl gönderim background.js'te yapılır (popup kapansa bile tamamlanır).
+
+function gonderButonunuGuncelle(tumVeri) {
+  if (gonderiliyor) return;
+  const btn = document.getElementById('gonderBtn');
+  const sayi = gonderilmemisSayisi(tumVeri);
+  btn.textContent = sayi > 0 ? `📤 Lezen'e gönder (${sayi})` : "📤 Lezen'e gönder";
+}
+
+async function lezeneGonder() {
+  if (gonderiliyor) return;
+  const btn = document.getElementById('gonderBtn');
+  gonderiliyor = true;
+  btn.disabled = true;
+  btn.textContent = '⏳ Gönderiliyor…';
+
+  let cevap = null;
+  try {
+    cevap = await chrome.runtime.sendMessage({ tip: 'LEZENE_GONDER' });
+  } catch (e) {
+    cevap = null;
+  }
+
+  gonderiliyor = false;
+  btn.disabled = false;
+  gonderimSonucunuGoster(cevap);
+  listeyiYukleVeCiz();
+}
+
+/** Sabit Türkçe mesajlar; adres, kod veya sunucu metni asla gösterilmez. */
+function gonderimSonucunuGoster(cevap) {
+  if (cevap && cevap.ok) {
+    if (!cevap.gonderilen) {
+      durumGoster('Gönderilecek yeni kelime yok.', true);
+    } else if (cevap.kalan > 0) {
+      durumGoster(`${cevap.gonderilen} kelime gönderildi · ${cevap.kalan} kelime kaldı, tekrar bas.`, true, 6000);
+    } else {
+      durumGoster(`${cevap.gonderilen} kelime gönderildi.`, true);
+    }
+    return;
+  }
+
+  const hata = cevap && cevap.hata;
+  if (hata === 'ayar') {
+    document.getElementById('lezen-ayarlari').open = true;
+    durumGoster('Önce aşağıdaki "Lezen ayarları" bölümünde adresi ve kodu gir ve kaydet.', false, 6000);
+  } else if (hata === 'ag') {
+    durumGoster('Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.', false, 6000);
+  } else if (hata === 'kod') {
+    durumGoster('Kod kabul edilmedi. Kodu Lezen uygulamasında Settings > Your data > Extension bölümünden kontrol et.', false, 8000);
+  } else if (hata === 'suruyor') {
+    durumGoster('Gönderim zaten sürüyor, biraz bekle.', false);
+  } else if (cevap && typeof cevap.durum === 'number') {
+    durumGoster(`Gönderilemedi (hata kodu ${cevap.durum}). Sonra tekrar dene.`, false, 6000);
+  } else {
+    durumGoster('Gönderilemedi. Sonra tekrar dene.', false, 6000);
+  }
+}
+
+// --- Lezen ayarları ---
+
+function lezenAyarlariniYukle() {
+  chrome.storage.local.get({ [AYAR_ANAHTARI]: {} }, (sonuc) => {
+    const ayar = sonuc[AYAR_ANAHTARI] || {};
+    if (typeof ayar.webhookUrl === 'string') document.getElementById('webhookUrl').value = ayar.webhookUrl;
+    if (typeof ayar.kod === 'string') document.getElementById('kisiselKod').value = ayar.kod;
+  });
+}
+
+function koduGosterGizle() {
+  const alan = document.getElementById('kisiselKod');
+  const btn = document.getElementById('kodGosterBtn');
+  const gizli = alan.type === 'password';
+  alan.type = gizli ? 'text' : 'password';
+  btn.textContent = gizli ? 'Gizle' : 'Göster';
+}
+
+function lezenAyarlariniKaydet() {
+  const webhookUrl = document.getElementById('webhookUrl').value.trim();
+  const kod = document.getElementById('kisiselKod').value.trim();
+
+  const hata = ayarlariDogrula(webhookUrl, kod);
+  if (hata) {
+    durumGoster(hata, false, 6000);
+    return;
+  }
+
+  // İzin isteği tıklamanın içinde hemen yapılmalı (Chrome kuralı). Sadece bu adresin
+  // sitesi için izin istenir. Ayarlar aynı anda kaydedilir: izin penceresi açılınca
+  // popup kapanırsa ayarlar yine de kaybolmaz.
+  const izin = { origins: [`https://${new URL(webhookUrl).hostname}/*`] };
+  const izinSonucu = chrome.permissions.request(izin).catch(() => false);
+  const kayit = chrome.storage.local.set({ [AYAR_ANAHTARI]: { webhookUrl, kod } });
+
+  Promise.all([izinSonucu, kayit]).then(
+    ([izinVerildi]) => {
+      if (izinVerildi) {
+        durumGoster('Ayarlar kaydedildi.', true);
+      } else {
+        durumGoster("Ayarlar kaydedildi ama Chrome izni verilmedi. Gönderim yine de çalışabilir; sorun olursa Kaydet'e tekrar basıp izin ver.", false, 8000);
+      }
+    },
+    () => durumGoster('Ayarlar kaydedilemedi. Tekrar dene.', false, 6000)
+  );
 }

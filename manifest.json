@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Hollandaca Kelime Yakalayıcı",
+  "version": "1.2.0",
+  "description": "Webde okuduğun Hollandaca kelimeleri çift tıklama veya sağ tıklama ile listeye ekle ve toplu kopyala.",
+  "permissions": ["storage", "contextMenus"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["common.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

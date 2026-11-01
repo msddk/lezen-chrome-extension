@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ayarlar - Hollandaca Kelime Yakalayıcı</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Eklenti Ayarları</h1>
+
+    <label for="webhookUrl">n8n Webhook URL</label>
+    <input type="url" id="webhookUrl" placeholder="https://senin-n8n-instance.com/webhook/kelime-listesi" />
+
+    <label for="otomatikSaat">Otomatik gönderim saati</label>
+    <input type="time" id="otomatikSaat" value="22:00" />
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="otomatikAktif" />
+      Otomatik gönderimi aktif et
+    </label>
+
+    <button id="kaydetBtn">Kaydet</button>
+
+    <p id="durum-mesaji" class="durum-mesaji" hidden></p>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

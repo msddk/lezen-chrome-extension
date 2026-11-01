@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hollandaca Kelime Yakalayıcı</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <h1>📚 Biriken Kelimeler (<span id="sayac">0</span>)</h1>
+  </header>
+
+  <section class="kopya-araclari">
+    <div class="kopya-ust">
+      <label for="ayracSecici">Ayraç</label>
+      <select id="ayracSecici">
+        <option value="satir">Satır satır</option>
+        <option value="virgul">Virgülle</option>
+      </select>
+    </div>
+    <div class="kopya-butonlari">
+      <button id="kopyalaBtn" title="Biriken tüm kelimeleri kopyalar, listeyi değiştirmez">📋 Kopyala</button>
+      <button id="kenaraAlBtn" title="Biriken tüm kelimeleri kopyalar ve kenara alır; liste sıfırlanır">📌 Kenara al + kopyala</button>
+    </div>
+  </section>
+
+  <main id="liste-container">
+    <p id="bos-mesaj" class="bos-mesaj" hidden>Biriken kelime yok. Bir sayfada bir kelimeye çift tıkla veya seçip sağ tıkla.</p>
+    <div id="liste"></div>
+
+    <section id="kenar-bolumu" class="kenar-bolumu" hidden>
+      <h2>📌 Kenardaki partiler</h2>
+      <div id="kenar-listesi"></div>
+    </section>
+  </main>
+
+  <div id="durum-mesaji" class="durum-mesaji" hidden></div>
+
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

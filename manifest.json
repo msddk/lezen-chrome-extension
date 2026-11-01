@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Hollandaca Kelime Yakalayıcı",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Webde okuduğun Hollandaca kelimeleri çift tıklama veya sağ tıklama ile listeye ekle ve toplu kopyala.",
   "permissions": ["storage", "contextMenus"],
+  "optional_host_permissions": ["https://*/*"],
   "background": {
     "service_worker": "background.js"
   },
